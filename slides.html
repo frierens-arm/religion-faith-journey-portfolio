@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faith Journey Portfolio — HRE1O1</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rosewater: #f2d5cf; --flamingo: #eebebe; --pink: #f4b8e4; --mauve: #ca9ee6;
+    --red: #e78284; --maroon: #ea999c; --peach: #ef9f76; --yellow: #e5c890;
+    --green: #a6d189; --teal: #81c8be; --sky: #99d1db; --sapphire: #85c1dc;
+    --blue: #8caaee; --lavender: #babbf1; --text: #c6d0f5;
+    --subtext1: #b5bfe2; --subtext0: #a5adce; --overlay2: #949cbb;
+    --overlay1: #838ba7; --overlay0: #737994; --surface2: #626880;
+    --surface1: #51576d; --surface0: #414559; --base: #303446;
+    --mantle: #292c3c; --crust: #232634;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--crust); color: var(--text);
+  }
+  .slide {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 3.5rem 5rem;
+    opacity: 0; transform: translateX(80px) scale(0.97);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none; overflow-y: auto;
+  }
+  .slide.active { opacity: 1; transform: translateX(0) scale(1); pointer-events: all; z-index: 10; }
+  .slide.exit-left { opacity: 0; transform: translateX(-60px) scale(0.97); }
+
+  .tagline { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase; color: var(--mauve); margin-bottom: 0.8rem; }
+  .mega-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; color: var(--text); margin-bottom: 1rem;
+  }
+  .mega-title .accent { color: var(--mauve); }
+  .subtitle { font-size: clamp(1rem, 2vw, 1.3rem); font-weight: 300; color: var(--subtext0); max-width: 650px; line-height: 1.6; }
+  .section-heading { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+
+  .nav {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 1.5rem; z-index: 100;
+    background: rgba(35, 38, 52, 0.8); backdrop-filter: blur(20px);
+    padding: 0.6rem 1.5rem; border-radius: 999px; border: 1px solid var(--surface0);
+  }
+  .nav-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1.5px solid var(--surface2); background: var(--surface0);
+    color: var(--text); font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--mauve); border-color: var(--mauve); color: var(--crust); }
+  .nav-progress { width: 200px; height: 3px; background: var(--surface0); border-radius: 999px; overflow: hidden; }
+  .nav-progress-bar { height: 100%; background: linear-gradient(90deg, var(--mauve), var(--blue)); border-radius: 999px; transition: width 0.4s; }
+  .nav-count { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--overlay1); min-width: 45px; text-align: right; }
+  .slide-counter { position: fixed; top: 2rem; right: 5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--overlay0); z-index: 100; letter-spacing: 0.1em; }
+
+  .virtue-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; width: 100%; max-width: 1100px; margin-top: 2rem; }
+  .virtue-card {
+    background: var(--base); border: 1px solid var(--surface0); border-radius: 20px;
+    padding: 1.5rem 1.2rem; text-align: center;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s; cursor: default;
+  }
+  .virtue-card:hover { transform: translateY(-6px); border-color: var(--mauve); box-shadow: 0 20px 40px rgba(202,158,230,0.1); }
+  .virtue-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+  .virtue-month { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--overlay1); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.3rem; }
+  .virtue-name { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+  .virtue-sin { font-size: 0.7rem; color: var(--overlay1); font-style: italic; }
+
+  .content-col { max-width: 800px; width: 100%; margin-top: 1.5rem; }
+  .content-block {
+    background: var(--base); border: 1px solid var(--surface0); border-radius: 16px;
+    padding: 1.5rem 1.8rem; margin-bottom: 1rem; transition: border-color 0.3s;
+  }
+  .content-block:hover { border-color: var(--surface1); }
+  .block-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .block-text { font-size: 1rem; line-height: 1.7; color: var(--subtext1); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; width: 100%; max-width: 900px; margin-top: 1.5rem; }
+
+  .prayer-box {
+    background: linear-gradient(135deg, rgba(202,158,230,0.08), rgba(140,170,238,0.08));
+    border: 1px solid rgba(202,158,230,0.2); border-radius: 20px;
+    padding: 2rem 2.5rem; max-width: 700px; text-align: center; margin-top: 1.5rem;
+  }
+  .prayer-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.15rem; color: var(--text); line-height: 1.8; }
+  .prayer-ref { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--overlay1); margin-top: 0.8rem; }
+
+  .badge { display: inline-block; padding: 0.2em 0.7em; border-radius: 8px; font-size: 0.7rem; font-weight: 600; }
+  .badge-mauve { background: rgba(202,158,230,0.15); color: var(--mauve); }
+  .badge-blue { background: rgba(140,170,238,0.15); color: var(--blue); }
+  .badge-green { background: rgba(166,209,137,0.15); color: var(--green); }
+  .badge-peach { background: rgba(239,159,118,0.15); color: var(--peach); }
+  .badge-yellow { background: rgba(229,200,144,0.15); color: var(--yellow); }
+  .badge-red { background: rgba(231,130,132,0.15); color: var(--red); }
+  .badge-teal { background: rgba(129,200,190,0.15); color: var(--teal); }
+
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s, transform 0.6s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .r1 { transition-delay: 0.1s; } .r2 { transition-delay: 0.2s; } .r3 { transition-delay: 0.35s; }
+  .r4 { transition-delay: 0.5s; } .r5 { transition-delay: 0.65s; } .r6 { transition-delay: 0.8s; }
+
+  .slide::-webkit-scrollbar { width: 4px; }
+  .slide::-webkit-scrollbar-track { background: transparent; }
+  .slide::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 999px; }
+
+  .timeline { display: flex; gap: 0; margin-top: 2rem; width: 100%; max-width: 900px; position: relative; }
+  .timeline::before { content: ''; position: absolute; top: 24px; left: 0; right: 0; height: 2px; background: var(--surface1); }
+  .tl-item { flex: 1; text-align: center; position: relative; padding: 0 0.5rem; }
+  .tl-dot { width: 12px; height: 12px; border-radius: 50%; margin: 0 auto 0.8rem; position: relative; z-index: 1; }
+  .tl-month { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--overlay1); letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+  .tl-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--text); }
+
+  .big-statement {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 3.5vw, 2.5rem);
+    font-weight: 700; line-height: 1.35;
+    max-width: 850px; color: var(--text);
+  }
+  .big-statement .accent { color: var(--mauve); }
+  .big-statement .yellow { color: var(--yellow); }
+  .big-statement .green { color: var(--green); }
+  .big-statement .blue { color: var(--blue); }
+  .big-statement .peach { color: var(--peach); }
+  .big-statement .red { color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="slide-counter" id="counter">01 / 16</div>
+
+<div class="nav">
+  <button class="nav-btn" onclick="prevSlide()">←</button>
+  <div class="nav-progress"><div class="nav-progress-bar" id="progress"></div></div>
+  <span class="nav-count" id="slideNum">1</span>
+  <button class="nav-btn" onclick="nextSlide()">→</button>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 01 — TITLE
+     ═══════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="reveal r1"><div class="tagline">HRE1O1 — Grade 9 Religion</div></div>
+  <div class="reveal r2">
+    <h1 class="mega-title">Faith Journey<br><span class="accent">Portfolio</span></h1>
+  </div>
+  <div class="reveal r3">
+    <p class="subtitle">Growing through Catholic virtues. Connected to Scripture, real life, and my own experiences.</p>
+  </div>
+  <div class="reveal r4" style="margin-top:1.5rem;">
+    <span class="badge badge-mauve">Knowledge</span>
+    <span class="badge badge-blue" style="margin-left:0.4rem;">Thinking</span>
+    <span class="badge badge-green" style="margin-left:0.4rem;">Communication</span>
+    <span class="badge badge-peach" style="margin-left:0.4rem;">Application</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 02 — OVERVIEW
+     ═══════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="reveal r1"><div class="tagline">The Year in Virtues</div></div>
+  <div class="reveal r2"><div class="section-heading">Four <span class="accent">Entries</span></div></div>
+  <div class="reveal r3">
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--yellow);"></div>
+        <div class="tl-month">Feb</div>
+        <div class="tl-name" style="color:var(--yellow);">Wisdom</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--green);"></div>
+        <div class="tl-month">Mar</div>
+        <div class="tl-name" style="color:var(--green);">Perseverance</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--blue);"></div>
+        <div class="tl-month">Apr</div>
+        <div class="tl-name" style="color:var(--blue);">Reverence</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--mauve);"></div>
+        <div class="tl-month">May</div>
+        <div class="tl-name" style="color:var(--mauve);">Responsibility</div>
+      </div>
+    </div>
+  </div>
+  <div class="reveal r4" style="margin-top:2rem;">
+    <p style="color:var(--subtext0); font-size:0.95rem; text-align:center;">
+      Each entry connects a Catholic virtue to Scripture, St. Augustine, and my own life.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 03 — WISDOM TITLE
+     ═══════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="reveal r1"><div style="font-size:2.5rem; margin-bottom:0.3rem;">🦉</div></div>
+  <div class="reveal r2"><div class="tagline">February</div></div>
+  <div class="reveal r3"><h1 class="mega-title" style="color:var(--yellow);">Wisdom</h1></div>
+  <div class="reveal r4">
+    <p class="subtitle">"I will use my gift of Wisdom in everything I do."</p>
+  </div>
+  <div class="reveal r5" style="margin-top:1rem;">
+    <span class="badge badge-yellow">Opposes Pride</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 04 — WISDOM: WHAT IT IS + ST. AUGUSTINE
+     ═══════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="reveal r1"><div class="tagline">Wisdom — February</div></div>
+  <div class="reveal r2"><div class="section-heading">What It <span class="yellow">Means</span></div></div>
+  <div class="reveal r3 two-col">
+    <div class="content-block">
+      <div class="block-label" style="color:var(--yellow);">Definition</div>
+      <div class="block-text">
+        Wisdom is having knowledge and actually knowing what to do with it. It is not just being smart. It is making good choices and being honest when you mess up.
+      </div>
+    </div>
+    <div class="content-block">
+      <div class="block-label" style="color:var(--mauve);">St. Augustine</div>
+      <div class="block-text">
+        St. Augustine spent half his life looking for truth in the wrong places. Fame. Pleasure. Philosophy. But here is the thing. He admitted he was wrong. That is what makes him wise. Not the fact that he never messed up. The fact that he owned it.
+      </div>
+    </div>
+  </div>
+  <div class="reveal r4">
+    <div style="font-family:'Playfair Display',serif; font-style:italic; font-size:1.05rem; color:var(--lavender); padding-left:1rem; border-left:2px solid var(--mauvre);">
+      "The fear of the Lord is the beginning of wisdom." — Proverbs 9:10
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 05 — WISDOM: MY LIFE
+     ═══════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="reveal r1"><div class="tagline">Wisdom — February</div></div>
+  <div class="reveal r2"><div class="section-heading">My <span class="yellow">Experience</span></div></div>
+  <div class="reveal r3 two-col">
+    <div class="content-block">
+      <div class="block-label" style="color:var(--green);">What I Did</div>
+      <div class="block-text">
+        I got into an argument with my parents and I knew it was my fault. I just admitted it instead of keep going. That is harder than it sounds. Most people would just keep arguing. Admitting you are wrong takes guts.
+      </div>
+    </div>
+    <div class="content-block">
+      <div class="block-label" style="color:var(--peach);">Real Life</div>
+      <div class="block-text">
+        My table tennis coach shows me stuff that applies to normal life, not just ping pong. One thing he taught me. Never look at someone and judge them on one small thing. Look at the full picture. That is basically what wisdom is.
+      </div>
+    </div>
+  </div>
+  <div class="reveal r4" style="margin-top:1rem;">
+    <div class="content-block" style="border-color:rgba(231,130,132,0.2);">
+      <div class="block-label" style="color:var(--red);">Vs. Pride</div>
+      <div class="block-text">
+        Pride is when people only look at someone's weak points. If you do that, you will never get anywhere. In sport or in life. Pride makes you think you already know everything. That is the opposite of being wise.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 06 — WISDOM: PRAYER
+     ═══════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="reveal r1"><div class="tagline">Wisdom — February</div></div>
+  <div class="reveal r2"><div class="section-heading"><span class="yellow">Prayer</span></div></div>
+  <div class="reveal r3 prayer-box">
+    <div class="prayer-text">
+      Lord, help me admit when I am wrong.<br>
+      Even when it is embarrassing.<br>
+      Teach me to see the full picture,<br>
+      not just the parts that are easy to judge.<br>
+      I do not want to be proud.<br>
+      I want to be wise.<br><br>
+      Amen.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 07 — PERSEVERANCE TITLE
+     ═══════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="reveal r1"><div style="font-size:2.5rem; margin-bottom:0.3rem;">🏔️</div></div>
+  <div class="reveal r2"><div class="tagline">March</div></div>
+  <div class="reveal r3"><h1 class="mega-title" style="color:var(--green);">Perseverance</h1></div>
+  <div class="reveal r4"><p class="subtitle">"I will stick to the goals I have set for myself."</p></div>
+  <div class="reveal r5" style="margin-top:1rem;"><span class="badge badge-green">Opposes Sloth</span></div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 08 — PERSEVERANCE: WHAT IT IS + SCRIPTURE
+     ═══════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="reveal r1"><div class="tagline">Perseverance — March</div></div>
+  <div class="reveal r2"><div class="section-heading">What It <span class="green">Means</span></div></div>
+  <div class="reveal r3 two-col">
+    <div class="content-block">
+      <div class="block-label" style="color:var(--green);">Definition</div>
+      <div class="block-text">
+        Perseverance is not giving up. Even when things are hard. Even when you are frustrated. You just keep going. That is it. There is no secret trick. You just do not stop.
+      </div>
+    </div>
+    <div class="content-block">
+      <div class="block-label" style="color:var(--mauve);">St. Augustine & Moses</div>
+      <div class="block-text">
+        St. Augustine lived a bad life for a long time. But he never stopped looking for God. He kept searching through all the wrong ways until he found the right one. And Moses. He was not a good speaker and Pharaoh kept saying no. But Moses just kept going back. That is perseverance.
+      </div>
+    </div>
+  </div>
+  <div class="reveal r4">
+    <div style="font-family:'Playfair Display',serif; font-style:italic; font-size:1.05rem; color:var(--lavender); padding-left:1rem; border-left:2px solid var(--green);">
+      "Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up." — Galatians 6:9
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 09 — PERSEVERANCE: MY LIFE
+     ═══════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="reveal r1"><div class="tagline">Perseverance — March</div></div>
+  <div class="reveal r2"><div class="section-heading">My <span class="green">Experience</span></div></div>
+  <div class="reveal r3 two-col">
+    <div class="content-block">
+      <div class="block-label" style="color:var(--green);">What I Did</div>
+      <div class="block-text">
+        Year 3 was the worst I have played table tennis in five years. But I did not stop. I kept training. It was frustrating but quitting would have been worse. And when I teach at camps, my patience gets tested a lot. Nothing is working and nobody is improving. But you just keep going.
+      </div>
+    </div>
+    <div class="content-block">
+      <div class="block-label" style="color:var(--peach);">Real Life</div>
+      <div class="block-text">
+        Think about players like Ma Long or Miwa Harimoto. If they quit when they were down 0-3, they would never have come back to win 4-3 and become champions. Champions do not never lose. They just never stop.
+      </div>
+    </div>
+  </div>
+  <div class="reveal r4" style="margin-top:1rem;">
+    <div class="content-block" style="border-color:rgba(231,130,132,0.2);">
+      <div class="block-label" style="color:var(--red);">Vs. Sloth</div>
+      <div class="block-text">
+        Sloth is a real problem. People quit when they do not see results right away. But that is kind of the whole point. You keep going even when it feels like nothing is happening. That is what separates people who make it from people who do not.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 10 — PERSEVERANCE: PRAYER
+     ═══════════════════════════════ -->
+<div class="slide" id="s10">
+  <div class="reveal r1"><div class="tagline">Perseverance — March</div></div>
+  <div class="reveal r2"><div class="section-heading"><span class="green">Prayer</span></div></div>
+  <div class="reveal r3 prayer-box">
+    <div class="prayer-text">
+      Lord, I want to quit sometimes.<br>
+      A lot of times actually.<br>
+      Help me remember why I started.<br>
+      Even when nothing is working.<br>
+      Even when I feel like nothing is changing.<br>
+      I am going to keep going.<br><br>
+      Amen.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 11 — REVERENCE TITLE
+     ═══════════════════════════════ -->
+<div class="slide" id="s11">
+  <div class="reveal r1"><div style="font-size:2.5rem; margin-bottom:0.3rem;">🙏</div></div>
+  <div class="reveal r2"><div class="tagline">April</div></div>
+  <div class="reveal r3"><h1 class="mega-title" style="color:var(--blue);">Reverence</h1></div>
+  <div class="reveal r4"><p class="subtitle">"I will honour and respect God's gift of life."</p></div>
+  <div class="reveal r5" style="margin-top:1rem;"><span class="badge badge-blue">Opposes Envy</span></div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 12 — REVERENCE: WHAT IT IS + SCRIPTURE
+     ═══════════════════════════════ -->
+<div class="slide" id="s12">
+  <div class="reveal r1"><div class="tagline">Reverence — April</div></div>
+  <div class="reveal r2"><div class="section-heading">What It <span class="blue">Means</span></div></div>
+  <div class="reveal r3 two-col">
+    <div class="content-block">
+      <div class="block-label" style="color:var(--blue);">Definition</div>
+      <div class="block-text">
+        Reverence is more than just being polite. It is actually respecting someone. Valuing them. Treating them like they matter. Because they do. It sounds simple but most people do not actually do it.
+      </div>
+    </div>
+    <div class="content-block">
+      <div class="block-label" style="color:var(--mauve);">St. Augustine & King David</div>
+      <div class="block-text">
+        St. Augustine eventually changed his entire life because he started respecting God. That is reverence. And King David had the chance to kill Saul. Saul was literally trying to kill him. But David spared him because Saul was chosen by God. That is respect even when it does not make sense.
+      </div>
+    </div>
+  </div>
+  <div class="reveal r4">
+    <div style="font-family:'Playfair Display',serif; font-style:italic; font-size:1.05rem; color:var(--lavender); padding-left:1rem; border-left:2px solid var(--blue);">
+      "Show proper respect to everyone." — 1 Peter 2:17
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 13 — REVERENCE: MY LIFE
+     ═══════════════════════════════ -->
+<div class="slide" id="s13">
+  <div class="reveal r1"><div class="tagline">Reverence — April</div></div>
+  <div class="reveal r2"><div class="section-heading">My <span class="blue">Experience</span></div></div>
+  <div class="reveal r3 two-col">
+    <div class="content-block">
+      <div class="block-label" style="color:var(--green);">What I Did</div>
+      <div class="block-text">
+        I showed respect to my parents and my table tennis coach this month. It is easy to respect someone who is helping you. But my coach gives advice to everyone at the club. Even people who do not like him. I respect that a lot.
+      </div>
+    </div>
+    <div class="content-block">
+      <div class="block-label" style="color:var(--peach);">Real Life</div>
+      <div class="block-text">
+        I respect my dad a lot. He can talk to anyone. Anywhere. Strangers, family, does not matter. He treats everyone the same. That is not easy to do. And I want to be like that.
+      </div>
+    </div>
+  </div>
+  <div class="reveal r4" style="margin-top:1rem;">
+    <div class="content-block" style="border-color:rgba(231,130,132,0.2);">
+      <div class="block-label" style="color:var(--red);">Vs. Envy</div>
+      <div class="block-text">
+        Envy is when people cannot respect others because they are jealous. Jealous of what someone has. Or what they can do. If people just appreciated what they have instead of being jealous of others, things would be a lot better.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 14 — REVERENCE: PRAYER
+     ═══════════════════════════════ -->
+<div class="slide" id="s14">
+  <div class="reveal r1"><div class="tagline">Reverence — April</div></div>
+  <div class="reveal r2"><div class="section-heading"><span class="blue">Prayer</span></div></div>
+  <div class="reveal r3 prayer-box">
+    <div class="prayer-text">
+      Lord, help me treat people with respect.<br>
+      Not just the people I like.<br>
+      Everyone.<br>
+      When I feel jealous, remind me<br>
+      what I already have.<br>
+      Help me value the people around me.<br><br>
+      Amen.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 15 — RESPONSIBILITY: ALL CONTENT
+     ═══════════════════════════════ -->
+<div class="slide" id="s15">
+  <div class="reveal r1"><div style="font-size:2.5rem; margin-bottom:0.3rem;">⚖️</div></div>
+  <div class="reveal r2"><div class="tagline">May</div></div>
+  <div class="reveal r3"><h1 class="mega-title" style="color:var(--mauve);">Responsibility</h1></div>
+  <div class="reveal r4"><p class="subtitle">"I will honour my commitments even when it becomes difficult."</p></div>
+  <div class="reveal r5" style="margin-top:0.5rem;"><span class="badge badge-mauve">Opposes Greed</span></div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 16 — RESPONSIBILITY FULL
+     ═══════════════════════════════ -->
+<div class="slide" id="s16">
+  <div class="reveal r1"><div class="tagline">Responsibility — May</div></div>
+  <div class="reveal r2"><div class="section-heading">Full <span class="accent">Reflection</span></div></div>
+  <div class="reveal r3 two-col">
+    <div class="content-block">
+      <div class="block-label" style="color:var(--mauve);">Definition & Scripture</div>
+      <div class="block-text">
+        Responsibility means owning what you do. Not blaming other people. Not making excuses. After St. Augustine found God, he did not just say sorry and move on. He became a bishop and spent the rest of his life helping people. That is taking responsibility. Same with Noah. God told him to build an ark. He did it. No complaining. No giving up.
+      </div>
+    </div>
+    <div class="content-block">
+      <div class="block-label" style="color:var(--green);">My Experience</div>
+      <div class="block-text">
+        I helped my partners finish our science project this month. It is easy to be responsible when you feel good. It is the moments when you are exhausted and just want to sleep that it actually counts. My dad goes to work every day. Even when he is tired. That is responsibility.
+      </div>
+    </div>
+  </div>
+  <div class="reveal r4" style="margin-top:1rem;">
+    <div class="content-block" style="border-color:rgba(231,130,132,0.2);">
+      <div class="block-label" style="color:var(--red);">Vs. Greed</div>
+      <div class="block-text">
+        Greed is when people only care about themselves. They do not think about how what they do affects other people. If everyone just did their own part, things would actually work. People would trust each other more.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SLIDE 17 — RESPONSIBILITY: PRAYER + CLOSING
+     ═══════════════════════════════ -->
+<div class="slide" id="s17">
+  <div class="reveal r1"><div class="tagline">Responsibility — May</div></div>
+  <div class="reveal r2 prayer-box" style="margin-top:0;">
+    <div class="prayer-text">
+      Lord, help me be someone people can count on.<br>
+      When I am tired, give me strength.<br>
+      Help me own what I do.<br>
+      Not just the easy stuff.<br>
+      The hard stuff too.<br><br>
+      Amen.
+    </div>
+  </div>
+  <div class="reveal r3" style="margin-top:2rem; text-align:center;">
+    <div style="font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:700; color:var(--text);">
+      Growing in faith.
+    </div>
+    <div style="color:var(--subtext0); font-size:0.95rem; margin-top:0.4rem;">
+      One virtue at a time.
+    </div>
+  </div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+function updateSlideClasses() {
+  const pct = (current / (total - 1)) * 100;
+  document.getElementById('progress').style.width = pct + '%';
+  document.getElementById('slideNum').textContent = current + 1;
+  document.getElementById('counter').textContent = String(current + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+  slides.forEach((s, i) => {
+    s.classList.remove('active', 'exit-left');
+    if (i === current) {
+      s.classList.add('active');
+      s.querySelectorAll('.reveal').forEach(el => {
+        el.classList.remove('visible');
+        setTimeout(() => el.classList.add('visible'), 80);
+      });
+    } else if (i < current) {
+      s.classList.add('exit-left');
+    }
+  });
+}
+function nextSlide() { if (current < total - 1) { current++; updateSlideClasses(); } }
+function prevSlide() { if (current > 0) { current--; updateSlideClasses(); } }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); nextSlide(); }
+  if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); prevSlide(); }
+  if (e.key === 'Home') { current = 0; updateSlideClasses(); }
+  if (e.key === 'End') { current = total - 1; updateSlideClasses(); }
+});
+let tx = 0, ty = 0;
+document.addEventListener('touchstart', e => { tx = e.changedTouches[0].screenX; ty = e.changedTouches[0].screenY; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].screenX - tx, dy = e.changedTouches[0].screenY - ty;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) { if (dx < 0) nextSlide(); else prevSlide(); }
+});
+let ok = true;
+document.addEventListener('wheel', e => {
+  if (!ok) return; ok = false;
+  if (e.deltaY > 30) nextSlide(); else if (e.deltaY < -30) prevSlide();
+  setTimeout(() => ok = true, 500);
+}, { passive: true });
+
+updateSlideClasses();
+</script>
+</body>
+</html>
