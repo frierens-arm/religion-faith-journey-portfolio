@@ -21,3 +21,5 @@ A slideshow presentation of my Faith Journey Portfolio, covering four Catholic v
 | 7–10 | Perseverance | March |
 | 11–14 | Reverence | April |
 | 15–18 | Responsibility | May |
+
+DONT OPEN ON MOBILE
